@@ -2,46 +2,56 @@
 
 DoIt() (
 
-echo "-------DoIt----------------"
+    echo "-------DoIt----------------"
 
-local array1=()
+    local _locarray=()
 
-# Add new element at the end of the array
+    # Add new element at the end of the array
 
-# Iterate the loop to read and print each array element
-for value in "${array[@]}"
-do
-    array1+=("$value")
-     echo $value
-done
+    # Iterate the directory contents and add to local array
+    for value in "${tmparray[@]}"
+    do
+        _locarray+=("$value")
+        echo "Added $value"
+    done
 
-echo "-----------------------"
+    echo "-----------------------"
 
-# Iterate the loop to read and print each array element
-for value in "${array1[@]}"
-do
-     echo $value
-done
+    # Iterate the loop to read and print each array element
+    for value in "${_locarray[@]}"
+    do
+        echo $value
+        echo "stat $dir/$value"
+        stat "$dir/$value"
+        echo "================================================"
+    done
 
-echo ${array1[0]}
-echo "-----------------------"
-echo ${array1[1]}
-echo "${array1[@]}"
+    echo ${_locarray[0]}
+    echo "-----------------------"
+    echo ${_locarray[1]}
+    echo "${_locarray[@]}"
 
 )
+
+dir=$1
 
 i=0
 while read line
 do
-    array[ $i ]="$line"  
+    tmparray[ $i ]="$line"  
     (( i++ ))
-done < <(ls -ls $1)
+done < <(ls $1)
 
-echo ${array[1]}
-echo ${array[2]}
+echo ${tmparray[1]}
+echo ${tmparray[2]}
+
+echo "+++++++++++++++++++++++++++++++++++++++"
+echo "+++++++++++++++++++++++++++++++++++++++"
 
 DoIt
+
 exit 0
+
 echo "-----------------------"
 
 files=($1/*)
@@ -74,5 +84,8 @@ echo "${array[@]}"
 
 
 echo "-----------------------"
+echo "-----------------------"
+echo "-----------------------"
 
 DoIt
+

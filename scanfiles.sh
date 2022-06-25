@@ -28,6 +28,51 @@ function _writeErrorLog {
 
 }
 
+
+_processdir()
+{
+	local currentPath=$1 prefix="$2"
+
+    tmparray=()
+
+    i=0
+    while read line
+    do
+        tmparray[ $i ]="$line"  
+        (( i++ ))
+    done < <(ls "$1")
+
+    local currentDir=()
+
+    # Iterate the directory contents and add to local array
+    for value in "${tmparray[@]}"
+    do
+        currentDir+=("$value")
+        #echo "Added $value"
+    done
+
+	#local -a currentDir=($(ls -Q --quoting-style escape $1))
+	local -i lastIndex=$((${#currentDir[*]} - 1)) index
+
+	for ((index=0; index<lastIndex; index++))
+	do
+		printf "$prefix├─${currentDir[$index]}\n"
+		#printf "%s├─%s\n" $prefix "${currentDir[$index]}" 
+		#echo ">>>>>> ${currentDir[$index]}"
+		if [ -d "$currentPath/${currentDir[$index]}" ]; then
+			_processdir "$currentPath/${currentDir[$index]}" "$prefix""│ "
+		fi	
+	done
+
+	if [ $lastIndex -ge 0 ]; then
+		printf "$prefix└─${currentDir[$lastIndex]}\n"
+		#printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
+		if [ -d "$currentPath/${currentDir[$index]}" ]; then
+			_processdir "$currentPath/${currentDir[$index]}" "$prefix""  "
+		fi
+	fi
+}
+
 PASSED=$1
 
 if [ -d "${PASSED}" ] ; then
@@ -60,58 +105,13 @@ fi
 _writeLog "Starting"
 _writeLog "========================================="
 
-# get only file names
-ls $1 -phxN1 | grep -v / > ./files/files-tomove-$3.txt
-
 dirCnt=0
 movCnt=0
 existCnt=0
 errCnt=0
 cnt=0
 
-while IFS="" read -r p || [ -n "$p" ]
-do
-  
-    found=0
-
-    ((cnt=cnt+1))
-
-    dirName=${p::-4}
-
-    fullDir=$1/$dirName" $3"
-
-    #echo $fullDir
-    #exit 0
-
-    # Check if movie directory already exists
-    if [ -d "${fullDir}" ] ; then
-        _writeLog "****$fullDir directory exists";
-        ((existCnt=existCnt+1))
-        _writeErrorLog "Already a directory $fullDir"
-    else
-        _writeLog ">>>>$fullDir does not exist, creating";
-        mkdir "$fullDir"
-        if [ $? -eq 0 ]; then
-            _writeLog "____Created $fullDir";
-            ((dirCnt=dirCnt+1))
-            _writeLog "____moving to $fullDir";
-            mv "$1/$p" "$fullDir"
-            if [ $? -eq 0 ]; then
-                _writeLog "____Moved $p";
-                ((movCnt=movCnt+1))
-            else
-                _writeLog "****Error moving file $p";
-                _writeErrorLog "Error $p"
-                ((errCnt=errCnt+1))
-            fi
-        else
-            _writeLog "****Error directory create failed for $fullDir";
-            _writeErrorLog "Error $p"
-            ((errCnt=errCnt+1))
-        fi
-    fi
-
-done < ./files/files-tomove-$3.txt
+_processdir $PASSED
 
 _writeLog "========================================="
 _writeLog "Number of input movies $cnt"
