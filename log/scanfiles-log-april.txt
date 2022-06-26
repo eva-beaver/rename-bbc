@@ -31,3 +31,14 @@ Number of directories with issues 0
 Number of movie directories with issues 0
 =========================================
 Complete
+Starting
+=========================================
+=========================================
+Number of input movies 0
+Number of directories created 0
+Number of movies moved 0
+#########################################
+Number of directories with issues 0
+Number of movie directories with issues 0
+=========================================
+Complete

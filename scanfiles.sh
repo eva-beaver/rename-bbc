@@ -10,28 +10,28 @@
 
 UNIQID=$2
 
-logDir="./log"
-fileDir="./files"
+logDir="./log/"
+fileDir="./files/"
 
 #////////////////////////////////
 function _writeLog {
 
     echo $1
-    echo $1 >> ./log/scanfiles-log-$UNIQID.txt
+    echo $1 >> "$logDir"scanfiles-log-$UNIQID.txt
 
 }
 
 #////////////////////////////////
 function _writeErrorLog {
 
-    echo $1 >> ./log/scanfiles-error-$UNIQID.txt
+    echo $1 >> "$logDir"scanfiles-error-$UNIQID.txt
 
 }
 
 #////////////////////////////////
 _processfile()
 {
-    printf "$1/$2\n"  >> $UNIQID-files.txt
+    printf "$1/$2\n"  >> "$fileDir"$UNIQID-files.txt
 }
 
 #////////////////////////////////
