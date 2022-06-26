@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Scan a directory recurisivly and report on contents
+#Scan a directory recurisivly and report on contents
 
 # ./scanfiles.sh /mnt/share/allmovies/backup-3/X 0000 [Red]
 # ./scanfiles.sh /mnt/share/movies/2021-01-January-1/ 0000 [Red]
@@ -17,18 +17,24 @@ fileDir="./files"
 function _writeLog {
 
     echo $1
-    echo $1 >> ./log/movefiletodirit-log-$UNIQID.txt
+    echo $1 >> ./log/scanfiles-log-$UNIQID.txt
 
 }
 
 #////////////////////////////////
 function _writeErrorLog {
 
-    echo $1 >> ./log/movefiletodirit-error-$UNIQID.txt
+    echo $1 >> ./log/scanfiles-error-$UNIQID.txt
 
 }
 
+#////////////////////////////////
+_processfile()
+{
+    printf "$1/$2\n"  >> $UNIQID-files.txt
+}
 
+#////////////////////////////////
 _processdir()
 {
 	local currentPath=$1 prefix="$2"
@@ -61,6 +67,8 @@ _processdir()
 		#echo ">>>>>> ${currentDir[$index]}"
 		if [ -d "$currentPath/${currentDir[$index]}" ]; then
 			_processdir "$currentPath/${currentDir[$index]}" "$prefix""│ "
+        else
+    		_processfile "$currentPath/" "${currentDir[$index]}"
 		fi	
 	done
 
@@ -69,6 +77,9 @@ _processdir()
 		#printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
 		if [ -d "$currentPath/${currentDir[$index]}" ]; then
 			_processdir "$currentPath/${currentDir[$index]}" "$prefix""  "
+        else
+    		#printf "$currentPath/${currentDir[$index]}\n"  >> $UNIQID-files.txt
+    		_processfile "$currentPath/" "${currentDir[$index]}"
 		fi
 	fi
 }
@@ -111,7 +122,7 @@ existCnt=0
 errCnt=0
 cnt=0
 
-_processdir $PASSED
+_processdir "$PASSED"
 
 _writeLog "========================================="
 _writeLog "Number of input movies $cnt"
