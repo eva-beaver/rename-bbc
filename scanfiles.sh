@@ -35,22 +35,7 @@
 . $(dirname $0)/bin/_vars.sh
 . $(dirname $0)/bin/_logging.sh
 . $(dirname $0)/bin/_common.sh
-
-
-items="album: .media.track[0].Album"
-items+=", title: .media.track[0].Title"
-items+=", grouping: .media.track[0].Grouping"
-items+=", genre: .media.track[0].Genre"
-items+=", contenttype: .media.track[0].ContentType"
-items+=", description: .media.track[0].Description"
-items+=", recorded_date: .media.track[0].Recorded_Date"
-items+=", lyrics: .media.track[0].Lyrics"
-items+=", comment: .media.track[0].Comment"
-items+=", longdescription: .media.track[0].extra.LongDescription"
-items+=", duration: .media.track[0].Duration"
-items+=", filesize:.media.track[0].FileSize"
-items+=", format:.media.track[0].Format"
-items+=", fileextension:.media.track[0].FileExtension"
+. $(dirname $0)/bin/_file_processing.sh
 
 UNIQID=$2
 
@@ -86,103 +71,6 @@ function _writeErrorLog {
     
     echo $1 >> "$logDir"scanfiles-error-$UNIQID.txt
     
-}
-name=${strvar:1:$((len-5))}
-
-#////////////////////////////////
-_getFileExt()
-{
-    CURRFileExtension=${CURRFULLFILENAME:$((len-3)):3}
-    
-}
-
-#////////////////////////////////
-_getFileName()
-{
-    CURRFILENAME=${CURRFULLFILENAME:0:$((len-4))}
-    
-}
-
-#////////////////////////////////
-_getMediaInfo()
-{
-    
-    __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
-    
-    _getFileExt "$2"
-    _getFileName "$2"
-    
-    printf "$__mediadetails\n"  >> "$fileDir"$UNIQID-mediaDetails.txt
-    #echo $__mediadetails;
-}
-
-#////////////////////////////////
-_processedfile()
-{
-    
-    CURRDIRECTORYNAME=$1
-    CURRFULLFILENAME=$2
-    CURRFILENAME=""
-    CURRFileExtension=""
-    
-    _getMediaInfo  "$1" "$2"
-    
-    printf "$1$2----$CURRFILENAME\n"  >> "$fileDir"$UNIQID-files.txt
-    
-    ((fileScannedCnt=fileScannedCnt+1))
-    
-}
-
-#////////////////////////////////
-_processdir()
-{
-    local currentPath=$1 prefix="$2"
-    
-    tmparray=()
-    
-    ((dirScannedCnt=$dirScannedCnt+1))
-    
-    i=0
-    while read line
-    do
-        tmparray[ $i ]="$line"
-        (( i++ ))
-    done < <(ls "$1")
-    
-    local currentDir=()
-    
-    # Iterate the directory contents and add to local array
-    for value in "${tmparray[@]}"
-    do
-        currentDir+=("$value")
-        #echo "Added $value"
-    done
-    
-    #local -a currentDir=($(ls -Q --quoting-style escape $1))
-    local -i lastIndex=$((${#currentDir[*]} - 1)) index
-    
-    for ((index=0; index<lastIndex; index++))
-    do
-        printf "$prefix├─${currentDir[$index]}\n"
-        #printf "%s├─%s\n" $prefix "${currentDir[$index]}"
-        #echo ">>>>>> ${currentDir[$index]}"
-        if [ -d "$currentPath/${currentDir[$index]}" ]; then
-            _processdir "$currentPath/${currentDir[$index]}" "$prefix""│ "
-        else
-            _processedfile "$currentPath/" "${currentDir[$index]}"
-        fi
-    done
-    
-    if [ $lastIndex -ge 0 ]; then
-        printf "$prefix└─${currentDir[$lastIndex]}\n"
-        #printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
-        if [ -d "$currentPath/${currentDir[$index]}" ]; then
-            _processdir "$currentPath/${currentDir[$index]}" "$prefix""  "
-        else
-            #printf "$currentPath/${currentDir[$index]}\n"  >> $UNIQID-files.txt
-            _processedfile "$currentPath/" "${currentDir[$index]}"
-        fi
-    fi
 }
 
 function usage() {
@@ -263,11 +151,8 @@ _writeLog "⏲️     ========================================="
 
 OS=$(__getOSType)
 
-dirCnt=0
-movCnt=0
-existCnt=0
-errCnt=0
-cnt=0
+dirScannedCnt=0
+fileScannedCnt=0
 
 _processdir "$PASSED"
 

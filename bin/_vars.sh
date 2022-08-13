@@ -36,3 +36,18 @@ CURRFileExtension=""
 
 dirScannedCnt=0
 fileScannedCnt=0
+
+items="album: .media.track[0].Album"
+items+=", title: .media.track[0].Title"
+items+=", grouping: .media.track[0].Grouping"
+items+=", genre: .media.track[0].Genre"
+items+=", contenttype: .media.track[0].ContentType"
+items+=", description: .media.track[0].Description"
+items+=", recorded_date: .media.track[0].Recorded_Date"
+items+=", lyrics: .media.track[0].Lyrics"
+items+=", comment: .media.track[0].Comment"
+items+=", longdescription: .media.track[0].extra.LongDescription"
+items+=", duration: .media.track[0].Duration"
+items+=", filesize:.media.track[0].FileSize"
+items+=", format:.media.track[0].Format"
+items+=", fileextension:.media.track[0].FileExtension"
