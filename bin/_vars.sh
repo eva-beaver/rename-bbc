@@ -29,5 +29,10 @@ LOGDIR="./log"
 FILEDIR="./files"
 CACHE="./cache"
 
+CURRDIRECTORYNAME=""
+CURRFULLFILENAME=""
+CURRFILENAME=""
+CURRFileExtension=""
+
 dirScannedCnt=0
 fileScannedCnt=0

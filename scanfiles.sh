@@ -87,22 +87,50 @@ function _writeErrorLog {
     echo $1 >> "$logDir"scanfiles-error-$UNIQID.txt
     
 }
+name=${strvar:1:$((len-5))}
 
 #////////////////////////////////
-_processedfile()
+_getFileExt()
 {
-    printf "$1$2\n"  >> "$fileDir"$UNIQID-files.txt
-    _getMediaInfo  "$1" "$2"
-    ((fileScannedCnt=fileScannedCnt+1))
+    CURRFileExtension=${CURRFULLFILENAME:$((len-3)):3}
+    
+}
+
+#////////////////////////////////
+_getFileName()
+{
+    CURRFILENAME=${CURRFULLFILENAME:0:$((len-4))}
     
 }
 
 #////////////////////////////////
 _getMediaInfo()
 {
+    
     __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
+    
+    _getFileExt "$2"
+    _getFileName "$2"
+    
     printf "$__mediadetails\n"  >> "$fileDir"$UNIQID-mediaDetails.txt
     #echo $__mediadetails;
+}
+
+#////////////////////////////////
+_processedfile()
+{
+    
+    CURRDIRECTORYNAME=$1
+    CURRFULLFILENAME=$2
+    CURRFILENAME=""
+    CURRFileExtension=""
+    
+    _getMediaInfo  "$1" "$2"
+    
+    printf "$1$2----$CURRFILENAME\n"  >> "$fileDir"$UNIQID-files.txt
+    
+    ((fileScannedCnt=fileScannedCnt+1))
+    
 }
 
 #////////////////////////////////
