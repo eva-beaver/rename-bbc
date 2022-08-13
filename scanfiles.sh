@@ -15,6 +15,11 @@
 #* limitations under the License.
 #*/
 
+# emojipedia.org
+
+#set -e    # this line will stop the script on error
+#set -xv   # this line will enable debug
+
 #Scan a directory recurisivly and report on contents
 
 # ./scanfiles.sh /mnt/share/allmovies/backup-3/X 0000 [Red]
@@ -47,8 +52,6 @@ items+=", filesize:.media.track[0].FileSize"
 items+=", format:.media.track[0].Format"
 items+=", fileextension:.media.track[0].FileExtension"
 
-
-
 UNIQID=$2
 
 logDir="./log/"
@@ -56,24 +59,24 @@ fileDir="./files/"
 
 # Check log directory
 if [ -d "${LOGDIR}" ] ; then
-    echo "✔️ $LOGDIR directory exists";
+    _writeLog "✔️     $LOGDIR directory exists";
 else
-    echo "✔️ $LOGDIR does exist, creating";
+    _writeLog "✔️     $LOGDIR does exist, creating";
     mkdir $LOGDIR
 fi
 
 # Check fle directory
 if [ -d "${FILEDIR}" ] ; then
-    echo "✔️ $FILEDIR directory exists";
+    _writeLog "✔️     $FILEDIR directory exists";
 else
-    echo "✔️ $FILEDIR does exist, creating";
+    _writeLog "✔️     $FILEDIR does exist, creating";
     mkdir $FILEDIR
 fi
 
 #////////////////////////////////
 function _writeLog {
     
-    echo $1
+    echo "$1"
     echo $1 >> "$logDir"scanfiles-log-$UNIQID.txt
     
 }
@@ -90,6 +93,8 @@ _processedfile()
 {
     printf "$1$2\n"  >> "$fileDir"$UNIQID-files.txt
     _getMediaInfo  "$1" "$2"
+    ((fileScannedCnt=fileScannedCnt+1))
+    
 }
 
 #////////////////////////////////
@@ -106,6 +111,8 @@ _processdir()
     local currentPath=$1 prefix="$2"
     
     tmparray=()
+    
+    ((dirScannedCnt=$dirScannedCnt+1))
     
     i=0
     while read line
@@ -150,41 +157,83 @@ _processdir()
     fi
 }
 
-PASSED=$1
+function usage() {
+    set -e
+    cat <<EOM
+
+    ##### gitreport #####
+    Script to generate various reports on with a manifest file which list multiple github repo projects
+    or you can supply a single repo name
+
+    One of the following is required:
+
+    Required arguments:
+        -d | --directory        The starting directory to use, defaults to current directory
+        -t | --token            The token to use for file names
+
+    Optional arguments:
+        -k | --keep             Set to 1 to keep temp files directory, defaults to off (0)
+        -d | --debug            Set to 1 to switch on, defaults to off (0)
+        -o | --output           Where to output the log to, defaults to current directory
+
+    Requirements:
+        jq:                 Local jq installation
+        mediainfo:          Local mediainfo installation
+
+    Examples:
+      Run a report
+
+        ../bin/gitreport.sh -m mymanifest.txt -t xxxxxxxxxxxxxxxx -r branch
+
+        ./scanfiles.sh "/mnt/share/bbc/__2022 April" april
+    Notes:
+
+EOM
+    
+    exit 2
+}
 
 # check for required software
-__require git
+__require jq
 __require mediainfo
 
+# Need to add validation for input here
+
+if [ $# == 0 ]; then usage; fi
+
+PASSED=$1
+
 if [ -d "${PASSED}" ] ; then
-    echo "$PASSED is a directory";
+    echo "✔️         $PASSED is a directory";
 else
     if [ -f "${PASSED}" ]; then
-        echo "${PASSED} is a file";
+        echo "❌         ${PASSED} is a file";
     else
-        echo "${PASSED} is not valid";
+        echo "❌         ${PASSED} is not valid";
         exit 1
     fi
 fi
 
 # Check files directory
 if [ -d "${logDir}" ] ; then
-    echo "$logDir directory exists";
+    echo "✔️         $logDir directory exists";
 else
-    echo "$logDir does exist, creating";
+    echo "✔️         $logDir does exist, creating";
     mkdir $logDir
 fi
 
 # Check log directory
 if [ -d "${fileDir}" ] ; then
-    echo "$fileDir directory exists";
+    echo "✔️         $fileDir directory exists";
 else
-    echo "$fileDir does exist, creating";
+    echo "✔️         $fileDir does exist, creating";
     mkdir $fileDir
 fi
 
-_writeLog "Starting"
-_writeLog "========================================="
+_writeLog "⏲️     Starting............"
+_writeLog "⏲️     ========================================="
+
+OS=$(__getOSType)
 
 dirCnt=0
 movCnt=0
@@ -194,13 +243,9 @@ cnt=0
 
 _processdir "$PASSED"
 
-_writeLog "========================================="
-_writeLog "Number of input movies $cnt"
-_writeLog "Number of directories created $dirCnt"
-_writeLog "Number of movies moved $movCnt"
-_writeLog "#########################################"
-_writeLog "Number of directories with issues $existCnt"
-_writeLog "Number of movie directories with issues $errCnt"
-_writeLog "========================================="
+_writeLog "😲     ========================================="
+_writeLog "😲     Number of directories scanned $dirScannedCnt"
+_writeLog "😲     Number of files scanned $fileScannedCnt"
+_writeLog "😲     ========================================="
 
-_writeLog "Complete"
+_writeLog "👋     Complete!!!"
