@@ -2,14 +2,13 @@ version: '3.5'
 
 services:
   postgres:
-    container_name: postgres_container
+    container_name: local_pgdb
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      PGDATA: /data/postgres
     volumes:
-       - postgres:/data/postgres
+       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -24,7 +23,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
-       - pgadmin:/var/lib/pgadmin
+       - pgadmin-data:/var/lib/pgadmin
 
     ports:
       - "${PGADMIN_PORT:-5050}:80"
@@ -37,5 +36,5 @@ networks:
     driver: bridge
 
 volumes:
-    postgres:
-    pgadmin:
+    pgdata:
+    pgadmin-data:
