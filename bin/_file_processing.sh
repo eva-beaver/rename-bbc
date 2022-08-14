@@ -52,7 +52,7 @@ function __getMediaInfo()
     __getFileName "$2"
     local __IsValid=__checkFileType
     
-    printf "$__mediadetails\n"  >> "$fileDir"$UNIQID-mediaDetails.txt
+    printf "$__mediadetails\n"  >> "$FULLFILEDIR"$TOKEN-mediaDetails.txt
     #echo $__mediadetails;
 }
 
@@ -67,7 +67,7 @@ function __processeFile()
     
     __getMediaInfo  "$1" "$2"
     
-    printf "$1$2----$CURRFILENAME\n"  >> "$fileDir"$UNIQID-files.txt
+    printf "$1$2----$CURRFILENAME\n"  >> "$FULLFILEDIR"$TOKEN-files.txt
     
     ((fileScannedCnt=fileScannedCnt+1))
     
