@@ -24,10 +24,16 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPT_DIR_PARENT="$(dirname "$SCRIPT_DIR")"
 SCRIPT_NAME=${0##*/}
 
+LOGDIR="log"
+FULLLOGDIR=$LOGDIR
+FILEDIR="files"
+FULLFILEDIR=$FILEDIR
+CACHE="cache"
 
-LOGDIR="./log"
-FILEDIR="./files"
-CACHE="./cache"
+DIRECTORY_NAME=""
+TOKEN="xxxx"
+KEEPFILES=0
+DEBUG=0
 
 CURRDIRECTORYNAME=""
 CURRFULLFILENAME=""

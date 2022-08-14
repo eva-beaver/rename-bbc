@@ -36,6 +36,21 @@ error_raw() {
 }
 
 #////////////////////////////////
+function _checkLogDir {
+    
+    FULLLOGDIR="$SCRIPT_DIR_PARENT/$LOGDIR/"
+    
+    # Check log directory
+    if [ -d "${FULLLOGDIR}" ] ; then
+        _writeLog "✔️     $FULLLOGDIR directory exists";
+    else
+        _writeLog "✔️     $FULLLOGDIR does exist, creating";
+        mkdir $FULLLOGDIR
+    fi
+    
+}
+
+#////////////////////////////////
 function _writeLog {
     
     echo "$1"

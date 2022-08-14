@@ -37,41 +37,7 @@
 . $(dirname $0)/bin/_common.sh
 . $(dirname $0)/bin/_file_processing.sh
 
-UNIQID=$2
-
-logDir="./log/"
-fileDir="./files/"
-
-# Check log directory
-if [ -d "${LOGDIR}" ] ; then
-    _writeLog "✔️     $LOGDIR directory exists";
-else
-    _writeLog "✔️     $LOGDIR does exist, creating";
-    mkdir $LOGDIR
-fi
-
-# Check fle directory
-if [ -d "${FILEDIR}" ] ; then
-    _writeLog "✔️     $FILEDIR directory exists";
-else
-    _writeLog "✔️     $FILEDIR does exist, creating";
-    mkdir $FILEDIR
-fi
-
-#////////////////////////////////
-function _writeLog {
-    
-    echo "$1"
-    echo $1 >> "$logDir"scanfiles-log-$UNIQID.txt
-    
-}
-
-#////////////////////////////////
-function _writeErrorLog {
-    
-    echo $1 >> "$logDir"scanfiles-error-$UNIQID.txt
-    
-}
+SCRIPT_NAME="scanfiles"
 
 function usage() {
     set -e
@@ -85,7 +51,7 @@ function usage() {
 
     Required arguments:
         -d | --directory        The starting directory to use, defaults to current directory
-        -t | --token            The token to use for file names
+        -t | --token            The token to use for unique file names
 
     Optional arguments:
         -k | --keep             Set to 1 to keep temp files directory, defaults to off (0)
@@ -117,48 +83,103 @@ __require mediainfo
 
 if [ $# == 0 ]; then usage; fi
 
-PASSED=$1
+OUTPUT=$(pwd)
 
-if [ -d "${PASSED}" ] ; then
-    echo "✔️         $PASSED is a directory";
+_DIRECTORY=""
+_TOKEN=""
+_KEEPFILES=1
+_DEBUG=0
+
+# Loop through arguments, two at a time for key and value
+while [[ $# > 0 ]]
+do
+    key="$1"
+    
+    case ${key} in
+        -d|--directory)
+            _DIRECTORY="$2"
+            shift # past argument
+        ;;
+        -t|--token)
+            _TOKEN="$2"
+            shift # past argument
+        ;;
+        -d|--debug)
+            _DEBUG=1
+            shift # past argument
+        ;;
+        -k|--keepFiles)
+            _KEEPFILES=1
+            shift # past argument
+        ;;
+        -o|--output)
+            _OUTPUT="$2"
+            shift # past argument
+        ;;
+        *)
+            usage
+            exit 2
+        ;;
+    esac
+    shift # past argument or value
+done
+
+DIRECTORY_NAME=$_DIRECTORY
+TOKEN=$_TOKEN
+KEEPFILES=$_KEEPFILES
+DEBUG=$_DEBUG
+
+_checkLogDir
+
+FULLFILEDIR="$SCRIPT_DIR_PARENT/$FILEDIR/"
+
+# Check fle directory
+if [ -d "${FILEDIR}" ] ; then
+    _writeLog "✔️     $FULLFILEDIR directory exists";
 else
-    if [ -f "${PASSED}" ]; then
-        echo "❌         ${PASSED} is a file";
+    _writeLog "✔️     $FULLFILEDIR does exist, creating";
+    mkdir $FILEDIR
+fi
+
+if [[ $DIRECTORY_NAME = "missing" ]]
+then
+    _writeLog "❌        No directory provided";
+    exit 2
+fi
+
+if [ -d "${DIRECTORY_NAME}" ] ; then
+    echo "✔️     $DIRECTORY_NAME is a directory";
+else
+    if [ -f "${DIRECTORY_NAME}" ]; then
+        echo "❌     ${DIRECTORY_NAME} is a file";
     else
-        echo "❌         ${PASSED} is not valid";
+        echo "❌     ${DIRECTORY_NAME} is not valid";
         exit 1
     fi
 fi
 
-# Check files directory
-if [ -d "${logDir}" ] ; then
-    echo "✔️         $logDir directory exists";
-else
-    echo "✔️         $logDir does exist, creating";
-    mkdir $logDir
-fi
-
-# Check log directory
-if [ -d "${fileDir}" ] ; then
-    echo "✔️         $fileDir directory exists";
-else
-    echo "✔️         $fileDir does exist, creating";
-    mkdir $fileDir
-fi
-
 _writeLog "⏲️     Starting............"
 _writeLog "⏲️     ========================================="
+
+if [[ $KEEPFILES -ne 1 ]]; then
+    _writeLog "✔️        Files will be removed Removed ${FULLFILEDIR}"
+fi
 
 OS=$(__getOSType)
 
 dirScannedCnt=0
 fileScannedCnt=0
 
-_processdir "$PASSED"
+__processDir "$DIRECTORY_NAME"
 
 _writeLog "😲     ========================================="
 _writeLog "😲     Number of directories scanned $dirScannedCnt"
 _writeLog "😲     Number of files scanned $fileScannedCnt"
 _writeLog "😲     ========================================="
+
+if [[ $KEEPFILES -ne 1 ]]; then
+    #rm -rf ${FULLFILEDIR}
+    _writeLog "✔️        Removed ${FULLFILEDIR}"
+fi
 
 _writeLog "👋     Complete!!!"

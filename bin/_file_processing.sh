@@ -19,34 +19,45 @@
 . $(dirname $0)/bin/_logging.sh
 
 #////////////////////////////////
-_getFileExt()
+function __getFileExt()
 {
     CURRFileExtension=${CURRFULLFILENAME:$((len-3)):3}
     
 }
 
 #////////////////////////////////
-_getFileName()
+function __getFileName()
 {
     CURRFILENAME=${CURRFULLFILENAME:0:$((len-4))}
     
 }
 
 #////////////////////////////////
-_getMediaInfo()
+function __checkFileType {
+    case "$CURRFileExtension" in
+        mp4*)     echo "mp4" ;;
+        mp3*)     echo "mp3" ;;
+        mkv*)     echo "mkv" ;;
+        *)        echo "unknown: $CURRFileExtension" ;;
+    esac
+}
+
+#////////////////////////////////
+function __getMediaInfo()
 {
     
     __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
     
-    _getFileExt "$2"
-    _getFileName "$2"
+    __getFileExt "$2"
+    __getFileName "$2"
+    local __IsValid=__checkFileType
     
     printf "$__mediadetails\n"  >> "$fileDir"$UNIQID-mediaDetails.txt
     #echo $__mediadetails;
 }
 
 #////////////////////////////////
-_processedfile()
+function __processeFile()
 {
     
     CURRDIRECTORYNAME=$1
@@ -54,7 +65,7 @@ _processedfile()
     CURRFILENAME=""
     CURRFileExtension=""
     
-    _getMediaInfo  "$1" "$2"
+    __getMediaInfo  "$1" "$2"
     
     printf "$1$2----$CURRFILENAME\n"  >> "$fileDir"$UNIQID-files.txt
     
@@ -63,7 +74,7 @@ _processedfile()
 }
 
 #////////////////////////////////
-_processdir()
+function __processDir()
 {
     local currentPath=$1 prefix="$2"
     
@@ -96,9 +107,9 @@ _processdir()
         #printf "%s├─%s\n" $prefix "${currentDir[$index]}"
         #echo ">>>>>> ${currentDir[$index]}"
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
-            _processdir "$currentPath/${currentDir[$index]}" "$prefix""│ "
+            __processDir "$currentPath/${currentDir[$index]}" "$prefix""│ "
         else
-            _processedfile "$currentPath/" "${currentDir[$index]}"
+            __processeFile "$currentPath/" "${currentDir[$index]}"
         fi
     done
     
@@ -106,10 +117,10 @@ _processdir()
         printf "$prefix└─${currentDir[$lastIndex]}\n"
         #printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
-            _processdir "$currentPath/${currentDir[$index]}" "$prefix""  "
+            __processDir "$currentPath/${currentDir[$index]}" "$prefix""  "
         else
             #printf "$currentPath/${currentDir[$index]}\n"  >> $UNIQID-files.txt
-            _processedfile "$currentPath/" "${currentDir[$index]}"
+            __processeFile "$currentPath/" "${currentDir[$index]}"
         fi
     fi
 }
