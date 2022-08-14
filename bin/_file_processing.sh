@@ -46,13 +46,17 @@ function __checkFileType {
 function __getMediaInfo()
 {
     
-    __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
-    
     __getFileExt "$2"
     __getFileName "$2"
     local __IsValid=__checkFileType
     
+    __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
+    
     printf "$__mediadetails\n"  >> "$FULLFILEDIR"$TOKEN-mediaDetails.txt
+    
+    __mediadetailsall=$(mediainfo --output=JSON "$1$2");
+    
+    printf "$__mediadetailsall\n"  > "$FULLCACHEDIR""$2".json
     #echo $__mediadetails;
 }
 

@@ -22,14 +22,12 @@
 
 #Scan a directory recurisivly and report on contents
 
-# ./scanfiles.sh /mnt/share/allmovies/backup-3/X 0000 [Red]
-# ./scanfiles.sh /mnt/share/movies/2021-01-January-1/ 0000 [Red]
-# sudo ./scanfiles.sh /mnt/share/backup-3/Movies12 0000 [Red]
+# ./scanfiles.sh -d /home/eva/bbc/ -t bbc
+# sudo ./scanfiles.sh -d /home/eva/bbc/ -t bbc
 
 # sudo mount.cifs //192.168.1.130/backup-3 /mnt/share/backup-3/ -o user=xxx,pass=xxx
 # sudo mount.cifs //192.168.1.134/bbc-recordings /mnt/share/bbc/ -o user=eva,pass=xxxx
 
-# ./scanfiles.sh "/mnt/share/bbc/__2022 April" april
 
 
 . $(dirname $0)/bin/_vars.sh
@@ -88,6 +86,7 @@ OUTPUT=$(pwd)
 _DIRECTORY=""
 _TOKEN=""
 _KEEPFILES=1
+_KEEPCACHE=1
 _DEBUG=0
 
 # Loop through arguments, two at a time for key and value
@@ -112,6 +111,10 @@ do
             _KEEPFILES=1
             shift # past argument
         ;;
+        -k|--keepCache)
+            _KEEPCACHE=1
+            shift # past argument
+        ;;
         -o|--output)
             _OUTPUT="$2"
             shift # past argument
@@ -127,18 +130,28 @@ done
 DIRECTORY_NAME=$_DIRECTORY
 TOKEN=$_TOKEN
 KEEPFILES=$_KEEPFILES
+KEEPCACHE=$_KEEPCACHE
 DEBUG=$_DEBUG
 
 _checkLogDir
 
 FULLFILEDIR="$SCRIPT_DIR_PARENT/$FILEDIR/"
+FULLCACHEDIR="$SCRIPT_DIR_PARENT/$CACHEDIR/"
 
-# Check fle directory
-if [ -d "${FILEDIR}" ] ; then
-    _writeLog "✔️     $FULLFILEDIR directory exists";
+# Check file directory
+if [ -d "${FULLFILEDIR}" ] ; then
+    _writeLog "✔️     File directory exists ($FULLFILEDIR)";
 else
-    _writeLog "✔️     $FULLFILEDIR does exist, creating";
-    mkdir $FILEDIR
+    _writeLog "✔️     File does exist, creating ($FULLFILEDIR)";
+    mkdir $FULLFILEDIR
+fi
+
+# Check cache directory
+if [ -d "${FULLCACHEDIR}" ] ; then
+    _writeLog "✔️     Cache directory exists ($FULLCACHEDIR)";
+else
+    _writeLog "✔️     Cache does exist, creating ($FULLCACHEDIR)";
+    mkdir $FULLCACHEDIR
 fi
 
 if [[ $DIRECTORY_NAME = "missing" ]]
@@ -180,6 +193,11 @@ _writeLog "😲     ========================================="
 if [[ $KEEPFILES -ne 1 ]]; then
     #rm -rf ${FULLFILEDIR}
     _writeLog "✔️        Removed ${FULLFILEDIR}"
+fi
+
+if [[ $KEEPCACHE -ne 1 ]]; then
+    #rm -rf ${FULLCACHEDIR}
+    _writeLog "✔️        Removed ${FULLCACHEDIR}"
 fi
 
 _writeLog "👋     Complete!!!"

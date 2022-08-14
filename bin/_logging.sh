@@ -44,8 +44,8 @@ function _checkLogDir {
     if [ -d "${FULLLOGDIR}" ] ; then
         _writeLog "✔️     $FULLLOGDIR directory exists";
     else
-        _writeLog "✔️     $FULLLOGDIR does exist, creating";
         mkdir $FULLLOGDIR
+        _writeLog "✔️     $FULLLOGDIR does exist, creating";
     fi
     
 }
