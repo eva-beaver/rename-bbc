@@ -14,3 +14,12 @@ echo "Type : $type"
 name=${strvar:1:$((len-5))}
 
 echo "Name : $name"
+
+mystring="'iiiiixx'xx"
+
+newstring=${mystring//"xx"/"yy"}
+newstring=${mystring//"'"/"''"}
+
+echo "mystring : $mystring"
+echo "newstring : $newstring"
+

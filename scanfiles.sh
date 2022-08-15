@@ -183,6 +183,9 @@ OS=$(__getOSType)
 dirScannedCnt=0
 fileScannedCnt=0
 
+export PGPASSWORD='changeme';
+
+
 __processDir "$DIRECTORY_NAME"
 
 _writeLog "😲     ========================================="
