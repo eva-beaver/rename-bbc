@@ -53,16 +53,23 @@ function _checkLogDir {
 #////////////////////////////////
 function _writeLog {
     
-    echo "$1"
-    echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    #echo "$1"
+    #echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    
+    printf "$1\n"
+    printf "$1\n" >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
     
 }
 
 #////////////////////////////////
 function _writeErrorLog {
     
-    echo "$1"
-    echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
-    echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-errors-$UNIQID.txt
+    #echo "$1"
+    #echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    #echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-errors-$UNIQID.txt
+    
+    printf "$1\n"
+    printf "$1\n" >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    printf "$1\n" >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-errors-$UNIQID.txt
     
 }

@@ -51,28 +51,30 @@ function __getMediaInfo()
     __getFileName "$2"
     local __IsValid=__checkFileType
     
+    # get a subset of metadata (do we need this?)
     __mediadetails=$(mediainfo --output=JSON "$1$2"  |  jq '. | {'"$items"'}');
     printf "$__mediadetails\n"  >> "$FULLFILEDIR"$TOKEN-mediaDetails.txt
     
     #__mediadetailsall=$(mediainfo --output=JSON "$1$2");
     #printf "$__mediadetailsall\n"  > "$FULLCACHEDIR""$2".json
     
-    __insert=
     
-    __mediadetailsallfix=${__mediadetailsall//"'"/"''"}
+    if [[ $PERSISTDATA -eq 1 ]]; then
+        
+        # get the full media data for the file
+        __mediadetailsall=$(mediainfo --output=JSON "$1$2");
+        
+        # fix issues with embedded literals
+        __mediadetailsallfix=${__mediadetailsall//"'"/"''"}
+        
+        printf "INSERT INTO data VALUES (uuid_generate_v4(), \n'$1', \n'$2', \n'$CURRFileExtension', \n'$__mediadetailsall'\n);\n"  > "$FULLCACHEDIR""$2".json
+        
+        _insertData "$CURRDIRECTORYNAME" "$CURRFULLFILENAME" CURRFILENAME "$CURRFileExtension" "$__mediadetailsall"
+        
+        #psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
+    fi
     
     
-    __mediadetailsall=$(mediainfo --output=JSON "$1$2");
-    printf "INSERT INTO data VALUES (uuid_generate_v4(), \n'$1', \n'$2', \n'$CURRFileExtension', \n'$__mediadetailsall'\n);\n"  > "$FULLCACHEDIR""$2".json
-    
-    _insertData "$CURRDIRECTORYNAME" "$CURRFULLFILENAME" CURRFILENAME "$CURRFileExtension" "$__mediadetailsall"
-    
-    
-    #psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
-    
-    
-    #exit 1
-    #INSERT INTO data VALUES (uuid_generate_v4(), 'dirname', 'filename', 'MP4', '{}');
     
     #echo $__mediadetails;
 }

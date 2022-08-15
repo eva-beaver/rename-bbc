@@ -37,7 +37,11 @@ Datatable=+");"
 function _checkPostgresStatus {
     
     if ($( ping $DBServer -c1 > /dev/null )) ; then
-        echo "Postgres db ping response succsess!!!"
+        #_writeLog "✔️     Postgres db [$DBServer] ping response success!!!"
+        echo 0
+    else
+        #_writeErrorLog "❌    Postgres db [$DBServer] ping failed"
+        echo 1
     fi
     
 }
@@ -47,9 +51,9 @@ function _checkIfDatabaseExists {
     
     if [ "$( psql -h $DBServer -U $DBUser -XtAc "SELECT 1 FROM pg_database WHERE datname='$DatabaseName'" )" = '1' ]
     then
-        echo "Database already exists"
+        _writeLog "✔️     Database [$DatabaseName] already exists"
     else
-        echo "Database does not exist"
+        _writeLog "✔️     Database [$DatabaseName] does not exist"
     fi
     
 }
@@ -59,11 +63,12 @@ function _createDatabase {
     
     psql -h $DBServer -U $DBUser -XtAc "create database $DatabaseName" > ./log/result.txt 2>&1
     if [ $? -ne 0 ]; then
-        echo "Database creation failed [$DatabaseName]"
+        _writeErrorLog "❌     Database creation failed [$DatabaseName]"
         rslt=$(<./log/result.txt)
-        echo $rslt
+        _writeErrorLog "❌     $rslt"
         rm -f ./log/result.txt
     else
+        _writeLog "✔️     Database [$DatabaseName] created"
         rm -f ./log/result.txt
     fi
     #$SCRIPT_DIR_PARENT/$LOGDIR/
@@ -74,11 +79,12 @@ function _runSQL {
     
     psql -h $DBServer -U $DBUser -d $DatabaseName -XtAc "$1" > ./log/result.txt 2>&1
     if [ $? -ne 0 ]; then
-        echo "Database command failed [$1]"
+        _writeErrorLog "❌     Database command failed [$1]"
         rslt=$(<./log/result.txt)
-        echo $rslt
+        _writeErrorLog "❌     $rslt"
         rm -f ./log/result.txt
     else
+        _writeLog "✔️     script run successfully"
         rm -f ./log/result.txt
     fi
     #$SCRIPT_DIR_PARENT/$LOGDIR/
@@ -96,9 +102,9 @@ function _insertData {
     
     psql -h $DBServer -U $DBUser -d $DatabaseName -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$3', '$CURRFileExtension', '$__mediadetailsallfix');" > ./log/result.txt 2>&1
     if [ $? -ne 0 ]; then
-        echo "Database insert failed"
+        _writeErrorLog "❌     Database insert failed"
         rslt=$(<./log/result.txt)
-        echo $rslt
+        _writeErrorLog "❌     $rslt"
         rm -f ./log/result.txt
     else
         rm -f ./log/result.txt

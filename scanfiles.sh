@@ -24,6 +24,7 @@
 
 # ./scanfiles.sh -d /home/eva/bbc/ -t bbc
 # sudo ./scanfiles.sh -d /home/eva/bbc/ -t bbc
+# sudo ./scanfiles.sh -d /home/eva/bbc/ -t bbc -p 1
 
 # sudo mount.cifs //192.168.1.130/backup-3 /mnt/share/backup-3/ -o user=xxx,pass=xxx
 # sudo mount.cifs //192.168.1.134/bbc-recordings /mnt/share/bbc/ -o user=eva,pass=xxxx
@@ -33,6 +34,7 @@
 . $(dirname $0)/bin/_vars.sh
 . $(dirname $0)/bin/_logging.sh
 . $(dirname $0)/bin/_common.sh
+. $(dirname $0)/bin/_postgresdb.sh
 . $(dirname $0)/bin/_file_processing.sh
 
 SCRIPT_NAME="scanfiles"
@@ -52,6 +54,7 @@ function usage() {
         -t | --token            The token to use for unique file names
 
     Optional arguments:
+        -p | --persist          Set to 1 to persist file data to the postgres database, defaults to no (0)
         -k | --keep             Set to 1 to keep temp files directory, defaults to off (0)
         -d | --debug            Set to 1 to switch on, defaults to off (0)
         -o | --output           Where to output the log to, defaults to current directory
@@ -59,13 +62,15 @@ function usage() {
     Requirements:
         jq:                 Local jq installation
         mediainfo:          Local mediainfo installation
+        psql:               Local postgres command line tool
 
     Examples:
       Run a report
 
-        ../bin/gitreport.sh -m mymanifest.txt -t xxxxxxxxxxxxxxxx -r branch
-
         ./scanfiles.sh "/mnt/share/bbc/__2022 April" april
+
+        ./scanfiles.sh -d /home/eva/bbc/ -t bbc -p 1
+
     Notes:
 
 EOM
@@ -86,6 +91,7 @@ OUTPUT=$(pwd)
 
 _DIRECTORY=""
 _TOKEN=""
+_PERSISTDATA=0
 _KEEPFILES=1
 _KEEPCACHE=1
 _DEBUG=0
@@ -102,6 +108,10 @@ do
         ;;
         -t|--token)
             _TOKEN="$2"
+            shift # past argument
+        ;;
+        -p|--persist)
+            _PERSISTDATA="$2"
             shift # past argument
         ;;
         -d|--debug)
@@ -130,6 +140,7 @@ done
 
 DIRECTORY_NAME=$_DIRECTORY
 TOKEN=$_TOKEN
+PERSISTDATA=$_PERSISTDATA
 KEEPFILES=$_KEEPFILES
 KEEPCACHE=$_KEEPCACHE
 DEBUG=$_DEBUG
@@ -157,17 +168,17 @@ fi
 
 if [[ $DIRECTORY_NAME = "missing" ]]
 then
-    _writeLog "❌        No directory provided";
+    _writeErrorLog "❌        No directory provided";
     exit 2
 fi
 
 if [ -d "${DIRECTORY_NAME}" ] ; then
-    echo "✔️     $DIRECTORY_NAME is a directory";
+    _writeLog "✔️     $DIRECTORY_NAME is a directory";
 else
     if [ -f "${DIRECTORY_NAME}" ]; then
-        echo "❌     ${DIRECTORY_NAME} is a file";
+        _writeErrorLog "❌     ${DIRECTORY_NAME} is a file";
     else
-        echo "❌     ${DIRECTORY_NAME} is not valid";
+        _writeErrorLog "❌     ${DIRECTORY_NAME} is not valid";
         exit 1
     fi
 fi
@@ -185,6 +196,16 @@ dirScannedCnt=0
 fileScannedCnt=0
 
 export PGPASSWORD='changeme';
+
+if [[ $PERSISTDATA -eq 1 ]]; then
+    rslt=$(_checkPostgresStatus)
+    if [[ $rslt -eq 0 ]]; then
+        _writeLog "✔️     Postgres db [$DBServer] ping response success!!!"
+    else
+        _writeErrorLog "❌    Postgres db [$DBServer] ping failed"
+        exit 1
+    fi
+fi
 
 # call main funtion to do the processing
 __processDir "$DIRECTORY_NAME"
