@@ -16,22 +16,22 @@
 #*/
 
 # usage: print [args...]
-print() {
+function print() {
     echo "${CURRENT_SCRIPT}: $*"
 }
 
 # usage: print_raw [args...]
-print_raw() {
+function print_raw() {
     echo "$*"
 }
 
 # usage: error [args...]
-error() {
+function error() {
     print "error: $*" >&2
 }
 
 # usage: error_raw [args...]
-error_raw() {
+function error_raw() {
     print_raw "$*" >&2
 }
 

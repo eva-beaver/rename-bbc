@@ -76,8 +76,9 @@ EOM
 # check for required software
 __require jq
 __require mediainfo
+__require psql
 
-# Need to add validation for input here
+# validation input here
 
 if [ $# == 0 ]; then usage; fi
 
@@ -185,7 +186,7 @@ fileScannedCnt=0
 
 export PGPASSWORD='changeme';
 
-
+# call main funtion to do the processing
 __processDir "$DIRECTORY_NAME"
 
 _writeLog "😲     ========================================="

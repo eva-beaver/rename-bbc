@@ -17,6 +17,7 @@
 
 . $(dirname $0)/bin/_vars.sh
 . $(dirname $0)/bin/_logging.sh
+. $(dirname $0)/bin/_postgresdb.sh
 
 #////////////////////////////////
 function __getFileExt()
@@ -64,7 +65,10 @@ function __getMediaInfo()
     __mediadetailsall=$(mediainfo --output=JSON "$1$2");
     printf "INSERT INTO data VALUES (uuid_generate_v4(), \n'$1', \n'$2', \n'$CURRFileExtension', \n'$__mediadetailsall'\n);\n"  > "$FULLCACHEDIR""$2".json
     
-    psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
+    _insertData "$CURRDIRECTORYNAME" "$CURRFULLFILENAME" CURRFILENAME "$CURRFileExtension" "$__mediadetailsall"
+    
+    
+    #psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
     
     
     #exit 1
