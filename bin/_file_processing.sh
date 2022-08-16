@@ -123,7 +123,12 @@ function __processDir()
     
     for ((index=0; index<lastIndex; index++))
     do
-        _writeLogNNL "$prefix├─${currentDir[$index]}\n"
+        #[ $_INFO -eq 1 ] &&
+        if [[ $_INFO -eq 1 ]]; then
+            _writeLogNNL "$prefix├─${currentDir[$index]}\n"
+        else
+            printf "."
+        fi
         #printf "%s├─%s\n" $prefix "${currentDir[$index]}"
         #echo ">>>>>> ${currentDir[$index]}"
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
@@ -134,7 +139,12 @@ function __processDir()
     done
     
     if [ $lastIndex -ge 0 ]; then
-        _writeLogNNL "$prefix└─${currentDir[$lastIndex]}\n"
+        #[ $_INFO -eq 1 ] &&
+        if [[ $_INFO -eq 1 ]]; then
+            _writeLogNNL "$prefix└─${currentDir[$lastIndex]}\n"
+        else
+            printf "."
+        fi
         #printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
             __processDir "$currentPath/${currentDir[$index]}" "$prefix""  "

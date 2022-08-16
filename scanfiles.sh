@@ -55,9 +55,11 @@ function usage() {
 
     Optional arguments:
         -p | --persist          Set to 1 to persist file data to the postgres database, defaults to no (0)
-        -k | --keep             Set to 1 to keep temp files directory, defaults to off (0)
+        -i | --info             Set to 1 to show progress info, defaults to no (0)
+        -f | --keepFiles        Set to 1 to keep temp files directory, defaults to off (0)
+        -c | --keepCache        Set to 1 to keep cache files directory, defaults to off (0)
         -d | --debug            Set to 1 to switch on, defaults to off (0)
-        -o | --output           Where to output the log to, defaults to current directory
+        -o | --output           Where to output the log to, defaults to log directory
 
     Requirements:
         jq:                 Local jq installation
@@ -92,6 +94,7 @@ OUTPUT=$(pwd)
 _DIRECTORY=""
 _TOKEN=""
 _PERSISTDATA=0
+_INFO=0
 _KEEPFILES=1
 _KEEPCACHE=1
 _DEBUG=0
@@ -114,15 +117,19 @@ do
             _PERSISTDATA="$2"
             shift # past argument
         ;;
+        -i|--info)
+            _INFO="$2"
+            shift # past argument
+        ;;
         -d|--debug)
             _DEBUG=1
             shift # past argument
         ;;
-        -k|--keepFiles)
+        -f|--keepFiles)
             _KEEPFILES=1
             shift # past argument
         ;;
-        -k|--keepCache)
+        -c|--keepCache)
             _KEEPCACHE=1
             shift # past argument
         ;;
@@ -141,6 +148,7 @@ done
 DIRECTORY_NAME=$_DIRECTORY
 TOKEN=$_TOKEN
 PERSISTDATA=$_PERSISTDATA
+INFO=$_INFO
 KEEPFILES=$_KEEPFILES
 KEEPCACHE=$_KEEPCACHE
 DEBUG=$_DEBUG
@@ -220,14 +228,21 @@ fi
 
 _writeLog "⏲️     Extracting data"
 
+if [[ $_INFO -eq 0 ]]; then
+    printf "⌛"
+fi
 
 # call main funtion to do the processing
 __processDir "$DIRECTORY_NAME"
 
-_writeLog "😲     ========================================="
-_writeLog "😲     Number of directories scanned $dirScannedCnt"
-_writeLog "😲     Number of files scanned $fileScannedCnt"
-_writeLog "😲     ========================================="
+if [[ $_INFO -eq 0 ]]; then
+    printf "Done!!\n"
+fi
+
+_writeLog "😲    ========================================="
+_writeLog "😲    Number of directories scanned $dirScannedCnt"
+_writeLog "😲    Number of files scanned $fileScannedCnt"
+_writeLog "😲    ========================================="
 
 if [[ $KEEPFILES -ne 1 ]]; then
     #rm -rf ${FULLFILEDIR}
@@ -239,4 +254,4 @@ if [[ $KEEPCACHE -ne 1 ]]; then
     _writeLog "✔️        Removed ${FULLCACHEDIR}"
 fi
 
-_writeLog "👋     Complete!!!"
+_writeLog "👋    Complete!!!"
