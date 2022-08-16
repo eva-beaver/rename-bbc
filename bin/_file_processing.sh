@@ -58,7 +58,7 @@ function __getMediaInfo()
     #__mediadetailsall=$(mediainfo --output=JSON "$1$2");
     #printf "$__mediadetailsall\n"  > "$FULLCACHEDIR""$2".json
     
-    
+    # check if we need to save the data
     if [[ $PERSISTDATA -eq 1 ]]; then
         
         # get the full media data for the file
@@ -74,9 +74,6 @@ function __getMediaInfo()
         #psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
     fi
     
-    
-    
-    #echo $__mediadetails;
 }
 
 #////////////////////////////////
@@ -126,7 +123,7 @@ function __processDir()
     
     for ((index=0; index<lastIndex; index++))
     do
-        printf "$prefix├─${currentDir[$index]}\n"
+        _writeLogNNL "$prefix├─${currentDir[$index]}\n"
         #printf "%s├─%s\n" $prefix "${currentDir[$index]}"
         #echo ">>>>>> ${currentDir[$index]}"
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
@@ -137,7 +134,7 @@ function __processDir()
     done
     
     if [ $lastIndex -ge 0 ]; then
-        printf "$prefix└─${currentDir[$lastIndex]}\n"
+        _writeLogNNL "$prefix└─${currentDir[$lastIndex]}\n"
         #printf "%s└─%s\n" "$prefix" ${currentDir[$lastIndex]}
         if [ -d "$currentPath/${currentDir[$index]}" ]; then
             __processDir "$currentPath/${currentDir[$index]}" "$prefix""  "

@@ -20,17 +20,19 @@
 
 DBServer="127.0.0.1"
 DBUser="postgres"
-DatabaseName="test"
+DatabaseName="bbcmedia"
+TableName="data"
+UUIDExtension="CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\""
 
-Datatable="create table data"
-Datatable=+"("
-Datatable=+"   uuidkey          uuid         not null ,"
-Datatable=+"   directorypath    varchar(256) not null ,"
-Datatable=+"   directoryname    varchar(256) not null ,"
-Datatable=+"   filename         varchar(256) not null ,"
-Datatable=+"   extension        varchar(10)  not null ,"
-Datatable=+"   mediainfo        jsonb        not null default '{}'::jsonb"
-Datatable=+");"
+Datatable="create table $TableName"
+Datatable+="("
+Datatable+="   uuidkey          uuid         not null ,"
+Datatable+="   directorypath    varchar(256) not null ,"
+Datatable+="   directoryname    varchar(256) not null ,"
+Datatable+="   filename         varchar(256) not null ,"
+Datatable+="   extension        varchar(10)  not null ,"
+Datatable+="   mediainfo        jsonb        not null default '{}'::jsonb"
+Datatable+=")"
 
 
 #////////////////////////////////
@@ -51,9 +53,11 @@ function _checkIfDatabaseExists {
     
     if [ "$( psql -h $DBServer -U $DBUser -XtAc "SELECT 1 FROM pg_database WHERE datname='$DatabaseName'" )" = '1' ]
     then
-        _writeLog "✔️     Database [$DatabaseName] already exists"
+        #_writeLog "✔️     Database [$DatabaseName] already exists"
+        echo 0
     else
-        _writeLog "✔️     Database [$DatabaseName] does not exist"
+        #_writeLog "✔️     Database [$DatabaseName] does not exist"
+        echo 1
     fi
     
 }
@@ -61,6 +65,7 @@ function _checkIfDatabaseExists {
 #////////////////////////////////
 function _createDatabase {
     
+    _writeLog "⏲️     Creating database [$DatabaseName]............"
     psql -h $DBServer -U $DBUser -XtAc "create database $DatabaseName" > ./log/result.txt 2>&1
     if [ $? -ne 0 ]; then
         _writeErrorLog "❌     Database creation failed [$DatabaseName]"
@@ -77,6 +82,8 @@ function _createDatabase {
 #////////////////////////////////
 function _runSQL {
     
+    _writeLog "⏲️     Running database command [$1]"
+    
     psql -h $DBServer -U $DBUser -d $DatabaseName -XtAc "$1" > ./log/result.txt 2>&1
     if [ $? -ne 0 ]; then
         _writeErrorLog "❌     Database command failed [$1]"
@@ -84,7 +91,7 @@ function _runSQL {
         _writeErrorLog "❌     $rslt"
         rm -f ./log/result.txt
     else
-        _writeLog "✔️     script run successfully"
+        _writeLog "✔️     Database command run successfully"
         rm -f ./log/result.txt
     fi
     #$SCRIPT_DIR_PARENT/$LOGDIR/

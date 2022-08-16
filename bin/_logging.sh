@@ -62,6 +62,17 @@ function _writeLog {
 }
 
 #////////////////////////////////
+function _writeLogNNL {
+    
+    #echo "$1"
+    #echo $1 >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    
+    printf "$1"
+    printf "$1" >> $SCRIPT_DIR_PARENT/$LOGDIR/$SCRIPT_NAME-log-$UNIQID.txt
+    
+}
+
+#////////////////////////////////
 function _writeErrorLog {
     
     #echo "$1"

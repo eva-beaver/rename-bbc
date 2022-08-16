@@ -205,7 +205,21 @@ if [[ $PERSISTDATA -eq 1 ]]; then
         _writeErrorLog "❌    Postgres db [$DBServer] ping failed"
         exit 1
     fi
+    rslt=$(_checkIfDatabaseExists)
+    if [[ $rslt -eq 0 ]]; then
+        _writeLog "✔️     Database [$DatabaseName] already exists"
+    else
+        _writeLog "✔️     Database [$DatabaseName] does not exist"
+        _createDatabase
+        _writeLog "⏲️     Configuring database [$DatabaseName]............"
+        _runSQL "$UUIDExtension"
+        _runSQL "$Datatable"
+        _writeLog "✔️     Database configured"
+    fi
 fi
+
+_writeLog "⏲️     Extracting data"
+
 
 # call main funtion to do the processing
 __processDir "$DIRECTORY_NAME"
