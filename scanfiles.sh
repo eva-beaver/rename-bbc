@@ -52,6 +52,9 @@ function usage() {
     Required arguments:
         -d | --directory        The starting directory to use, defaults to current directory
         -t | --token            The token to use for unique file names
+        -m | --mode             The mode to run the scan in
+                                    A - Analyse and report
+                                    R - Rename files, only for BBC downloads at the moment
 
     Optional arguments:
         -p | --persist          Set to 1 to persist file data to the postgres database, defaults to no (0)
@@ -93,6 +96,7 @@ OUTPUT=$(pwd)
 
 _DIRECTORY=""
 _TOKEN=""
+_MODE="A"
 _PERSISTDATA=0
 _INFO=0
 _KEEPFILES=1
@@ -115,6 +119,10 @@ do
         ;;
         -p|--persist)
             _PERSISTDATA="$2"
+            shift # past argument
+        ;;
+        -m|--mode)
+            _MODE="$2"
             shift # past argument
         ;;
         -i|--info)
@@ -147,6 +155,7 @@ done
 
 DIRECTORY_NAME=$_DIRECTORY
 TOKEN=$_TOKEN
+MODE=$_MODE
 PERSISTDATA=$_PERSISTDATA
 INFO=$_INFO
 KEEPFILES=$_KEEPFILES
@@ -193,6 +202,7 @@ fi
 
 _writeLog "⏲️     Starting............"
 _writeLog "⏲️     ========================================="
+_writeLog "⏲️     Mode is $MODE"
 
 if [[ $KEEPFILES -ne 1 ]]; then
     _writeLog "✔️        Files will be removed Removed ${FULLFILEDIR}"
@@ -202,6 +212,8 @@ OS=$(__getOSType)
 
 dirScannedCnt=0
 fileScannedCnt=0
+fileRenamedCnt=0
+fileLoadedCnt=0
 
 export PGPASSWORD='changeme';
 
@@ -226,7 +238,7 @@ if [[ $PERSISTDATA -eq 1 ]]; then
     fi
 fi
 
-_writeLog "⏲️     Extracting data"
+_writeLog "⏲️     Prcessing directories and files"
 
 if [[ $_INFO -eq 0 ]]; then
     printf "⌛"
@@ -242,6 +254,8 @@ fi
 _writeLog "😲    ========================================="
 _writeLog "😲    Number of directories scanned $dirScannedCnt"
 _writeLog "😲    Number of files scanned $fileScannedCnt"
+_writeLog "😲    Number of file renamed $fileRenamedCnt"
+_writeLog "😲    Number of file details load to database $fileLoadedCnt"
 _writeLog "😲    ========================================="
 
 if [[ $KEEPFILES -ne 1 ]]; then

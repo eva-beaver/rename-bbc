@@ -44,6 +44,38 @@ function __checkFileType {
 }
 
 #////////////////////////////////
+function __renameFile()
+{
+    
+    # Escape_to_the_Country_Series_19_-_14._Welsh_Borders_b0c11gh2_editorial.mp4
+    # Top_of_the_Pops_-_08_04_1993_m0019dvp_original.mp4
+    
+    # Check it has an _
+    if [[ "$2" == *"_"* ]]; then
+        
+        parts=($(echo $2 | tr "_" "\n"))
+        
+        local length=${#parts[@]}
+        
+        echo $length
+        
+        # only process files that have 3 or more parts
+        if [[ $length -gt 2 ]]; then
+            
+            for (( j=0; j<length; j++ ));
+            do
+                printf "Current index %d with value %s\n" $j "${parts[$j]}"
+            done
+            
+        fi
+        
+        ((fileRenamedCnt=fileRenamedCnt+1))
+        
+    fi
+    
+}
+
+#////////////////////////////////
 function __getMediaInfo()
 {
     
@@ -71,6 +103,8 @@ function __getMediaInfo()
         
         _insertData "$CURRDIRECTORYNAME" "$CURRFULLFILENAME" CURRFILENAME "$CURRFileExtension" "$__mediadetailsall"
         
+        ((fileLoadedCnt=fileLoadedCnt+1))
+        
         #psql -h '127.0.0.1' -U 'postgres' -d 'test' -c "INSERT INTO data VALUES (uuid_generate_v4(), '$1', '$2', '$CURRFileExtension', '$__mediadetailsallfix')";
     fi
     
@@ -85,9 +119,16 @@ function __processeFile()
     CURRFILENAME=""
     CURRFileExtension=""
     
-    __getMediaInfo  "$1" "$2"
-    
-    printf "$1$2----$CURRFILENAME\n"  >> "$FULLFILEDIR"$TOKEN-files.txt
+    if [[ "$MODE" == "R" ]]; then
+        
+        __renameFile "$CURRDIRECTORYNAME" "$CURRFULLFILENAME"
+        
+    else
+        
+        __getMediaInfo  "$1" "$2"
+        
+        printf "$1$2----$CURRFILENAME\n"  >> "$FULLFILEDIR"$TOKEN-files.txt
+    fi
     
     ((fileScannedCnt=fileScannedCnt+1))
     
